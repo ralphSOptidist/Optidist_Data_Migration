@@ -11,20 +11,20 @@ export async function insertUsersAndStores() {
     const businesses = await queryRunner.manager
       .createQueryBuilder()
       .select("*")
-      .from("business_information", "bs")
-      .where("bs.user_id IS NOT NULL")
+      .from("business_information", "business_information")
+      .where("business_information.user_id IS NOT NULL")
       .getRawMany();
 
     const stores = await queryRunner.manager
       .createQueryBuilder()
       .select("*")
-      .from("store", "s")
+      .from("store", "store")
       .getRawMany();
 
     const users = await queryRunner.manager
       .createQueryBuilder()
       .select("*")
-      .from("user", "u")
+      .from("user", "user")
       .getRawMany();
 
     await Promise.all(
@@ -33,14 +33,13 @@ export async function insertUsersAndStores() {
 
         let count = await queryRunner2.manager
           .createQueryBuilder()
-          .from("store", "s")
-          .where("s.id = :id", { id: store_id })
-          .getCount();
+          .from("store", "store")
+          .where("store.id = :id", { id: store_id })
+          .getRawOne();
 
-        if (count === 0) {
-          let business = businesses.find((bus) => {
-            bus.user_id === u.id;
-          });
+        if (!count) {
+          let business = businesses.find((bus) => bus.user_id === u.id);
+          console.log(business);
           if (business) {
             let store = stores.find((st) => st.id === u.store_id);
             let country = await queryRunner.manager
@@ -69,6 +68,9 @@ export async function insertUsersAndStores() {
               legal_name: null,
               image: store.image,
             };
+
+            console.log("store: ", store);
+
             await targetDatabase.query(
               `
                 INSERT INTO store (
@@ -105,42 +107,39 @@ export async function insertUsersAndStores() {
     );
 
     await Promise.all(
-      users?.map(async (u) => {
-        const query = `
-    INSERT INTO users (
-      id, email, first_name, last_name, password_hash, api_token,
-      created_at, updated_at, deleted_at, metadata, role, phone, 
-      locale, system_role, verified_at, last_active, store_id, otp
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `;
-
-        const values = [
-          u.id,
-          u.email,
-          u.first_name,
-          u.last_name,
-          u.password_hash,
-          u.api_token,
-          u.created_at,
-          u.updated_at,
-          u.deleted_at,
-          u.metadata,
-          u.role,
-          u.phone,
-          u.locale,
-          null,
-          u.verified_at,
-          new Date(),
-          u.store_id,
-          u.otp,
-        ];
-
-        await targetDatabase.query(query, values);
+      users?.map(async (u, index) => {
+        await queryRunner2.manager
+          .createQueryBuilder()
+          .insert()
+          .into("public.user")
+          .values({
+            id: u.id,
+            email: u.email,
+            first_name: u.first_name,
+            last_name: u.last_name,
+            password_hash: u.password_hash,
+            api_token: u.api_token,
+            created_at: u.created_at,
+            updated_at: u.updated_at,
+            deleted_at: u.deleted_at,
+            metadata: u.metadata,
+            role: u.role || "member",
+            phone: u.phone || "", // Changed from empty string to null
+            locale: u.locale || "en",
+            system_role: null,
+            verified_at: u.verified_at,
+            last_active: new Date(),
+            store_id: u.store_id,
+            otp: u.otp,
+          })
+          .execute();
+        console.log(`Added user : ${index + 1}/${users.length}`);
       })
     );
   } catch (e) {
     console.error("Error: ", e);
   } finally {
+    console.log("done");
     await queryRunner.release();
   }
 }

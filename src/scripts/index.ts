@@ -3,5 +3,5 @@ import { insertUsersAndStores } from "./sellers";
 
 export async function runScripts() {
   await insertUsersAndStores();
-  await insertCustomersAndBusinesses();
+  // await insertCustomersAndBusinesses();
 }
