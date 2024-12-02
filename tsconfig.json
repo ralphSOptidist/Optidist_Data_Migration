@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES6", // Ensure compatibility with modern JavaScript
+    "module": "CommonJS", // Use ES modules
+    "moduleResolution": "node", // Resolve modules like Node.js
+    "esModuleInterop": true, // Ensure compatibility with commonjs modules
+    "allowJs": true, // Allow JavaScript files to be used as well
+    "outDir": "./dist", // Output directory for compiled files
+    "strict": true, // Enable strict type checking
+    "skipLibCheck": true, // Skip checking library files
+    "resolveJsonModule": true // Allow importing of JSON modules
+  },
+  "include": ["src/**/*"], // Include all files in the "src" directory
+  "exclude": ["node_modules"] // Exclude "node_modules"
+}

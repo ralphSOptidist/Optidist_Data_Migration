@@ -1,0 +1,13 @@
+FROM_DB_HOST = "host"
+FROM_DB_PORT = 5432
+FROM_DB_USERNAME = "user"
+FROM_DB_PASSWORD = "password"
+FROM_DB_NAME = "database"
+FROM_DB_SSL = 1
+
+FROM_DB_HOST = "host"
+FROM_DB_PORT = 5432
+FROM_DB_USERNAME = "user"
+FROM_DB_PASSWORD = "password"
+FROM_DB_NAME = "database"
+TO_DB_SSL = 0
