@@ -3,117 +3,136 @@ import { generateUUID } from "../utils/generateUUID";
 
 export async function insertUsersAndStores() {
   const queryRunner = sourceDatabase.createQueryRunner();
+  const queryRunner2 = targetDatabase.createQueryRunner();
   try {
     await queryRunner.connect();
+    await queryRunner2.connect();
 
     const businesses = await queryRunner.manager
       .createQueryBuilder()
       .select("*")
-      .from("business_information", "bs") // Table name as string and alias
+      .from("business_information", "bs")
       .where("bs.user_id IS NOT NULL")
       .getRawMany();
 
-    console.log(businesses[0], businesses[1]);
-
-    await Promise.all(
-      businesses?.map(async (bs) => {
-        let customer = await queryRunner.manager
-          .createQueryBuilder()
-          .select("*")
-          .from("customer", "cs")
-          .where("cs.id = :id", { id: bs.customer_id })
-          .getRawOne();
-
-        let country = await queryRunner.manager
-          .createQueryBuilder()
-          .select("*")
-          .from("country", "c")
-          .where("c.id = :id", { id: bs.country })
-          .getRawOne();
-
-        const query = `
-            INSERT INTO customer (id, email, first_name, last_name, billing_address_id, password_hash, phone, has_account, created_at, updated_at, deleted_at, metadata, name, tax_number, bin, industries, verified_at, country_code)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
-            `;
-
-        await targetDatabase.query(query, [
-          bs.id.replaceAll("bus_", "cus_"),
-          customer.email,
-          customer.first_name,
-          customer.last_name,
-          bs.billing_address_id,
-          customer.password_hash,
-          customer.phone,
-          false,
-          new Date(),
-          new Date(),
-          null,
-          "{}",
-          bs.business_name,
-          bs.tax_number,
-          bs.bin,
-          bs.industries.join(","),
-          new Date(),
-          country.iso_2,
-        ]);
-      })
-    );
+    const stores = await queryRunner.manager
+      .createQueryBuilder()
+      .select("*")
+      .from("store", "s")
+      .getRawMany();
 
     const users = await queryRunner.manager
       .createQueryBuilder()
       .select("*")
-      .from("user", "u") // Table name as string and alias
+      .from("user", "u")
       .getRawMany();
-
-    console.log(users[0], users[1]);
 
     await Promise.all(
       users?.map(async (u) => {
-        let reformatted_customer = {
-          id: u.id,
-          email: u.email,
-          first_name: u.first_name,
-          last_name: u.last_name,
-          password_hash: u.password_hash,
-          phone: u.phone,
-          verified_at: u.verified_at,
-          last_active: new Date(),
-          locale: u.locale,
-          role: u.role,
-          customer_id: u.business_information_id.replaceAll("bus_", "cus_"),
-          updated_at: u.updated_at,
-          deleted_at: u.deleted_at,
-          created_at: u.created_at,
-          otp: u.otp,
-          is_subscribed: u.is_subscribed,
-        };
+        let store_id = u.store_id;
+
+        let count = await queryRunner2.manager
+          .createQueryBuilder()
+          .from("store", "s")
+          .where("s.id = :id", { id: store_id })
+          .getCount();
+
+        if (count === 0) {
+          let business = businesses.find((bus) => {
+            bus.user_id === u.id;
+          });
+          if (business) {
+            let store = stores.find((st) => st.id === u.store_id);
+            let country = await queryRunner.manager
+              .createQueryBuilder()
+              .select("*")
+              .from("country", "c")
+              .where("c.id = :id", { id: business.country })
+              .getRawOne();
+
+            let reformatted_store = {
+              id: u.store_id,
+              name: store.name,
+              default_currency_code: store.default_currency_code,
+              swap_link_template: store.swap_link_template,
+              created_at: store.created_at,
+              updated_at: store.updated_at,
+              metadata: store.metadata,
+              payment_link_template: store.payment_link_template,
+              invite_link_template: store.invite_link_template,
+              default_location_id: store.default_location_id,
+              industries: business.industries,
+              tax_number: business.tax_number,
+              bin: business.bin,
+              country_code: country.iso_2,
+              verified_at: new Date(),
+              legal_name: null,
+              image: store.image,
+            };
+            await targetDatabase.query(
+              `
+                INSERT INTO store (
+                  id, name, default_currency_code, swap_link_template, created_at, 
+                  updated_at, metadata, payment_link_template, invite_link_template, 
+                  default_location_id, industries, tax_number, bin, country_code, 
+                  verified_at, legal_name, image
+                ) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+              `,
+              [
+                reformatted_store.id,
+                reformatted_store.name,
+                reformatted_store.default_currency_code,
+                reformatted_store.swap_link_template,
+                reformatted_store.created_at,
+                reformatted_store.updated_at,
+                reformatted_store.metadata,
+                reformatted_store.payment_link_template,
+                reformatted_store.invite_link_template,
+                reformatted_store.default_location_id,
+                reformatted_store.industries,
+                reformatted_store.tax_number,
+                reformatted_store.bin,
+                reformatted_store.country_code,
+                reformatted_store.verified_at,
+                reformatted_store.legal_name,
+                reformatted_store.image,
+              ]
+            );
+          }
+        }
+      })
+    );
+
+    await Promise.all(
+      users?.map(async (u) => {
         const query = `
-        INSERT INTO public.user (
-            id, email, first_name, last_name, password_hash, phone,
-            verified_at, last_active, locale, role, customer_id,
-            updated_at, deleted_at, created_at, otp, is_subscribed
-        ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
-        )
-        `;
+    INSERT INTO users (
+      id, email, first_name, last_name, password_hash, api_token,
+      created_at, updated_at, deleted_at, metadata, role, phone, 
+      locale, system_role, verified_at, last_active, store_id, otp
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
 
         const values = [
-          reformatted_customer.id,
-          reformatted_customer.email,
-          reformatted_customer.first_name,
-          reformatted_customer.last_name,
-          reformatted_customer.password_hash,
-          reformatted_customer.phone,
-          reformatted_customer.verified_at,
-          reformatted_customer.last_active,
-          reformatted_customer.locale,
-          reformatted_customer.role,
-          reformatted_customer.customer_id,
-          reformatted_customer.updated_at,
-          reformatted_customer.deleted_at,
-          reformatted_customer.created_at,
-          reformatted_customer.otp,
-          reformatted_customer.is_subscribed,
+          u.id,
+          u.email,
+          u.first_name,
+          u.last_name,
+          u.password_hash,
+          u.api_token,
+          u.created_at,
+          u.updated_at,
+          u.deleted_at,
+          u.metadata,
+          u.role,
+          u.phone,
+          u.locale,
+          null,
+          u.verified_at,
+          new Date(),
+          u.store_id,
+          u.otp,
         ];
 
         await targetDatabase.query(query, values);
