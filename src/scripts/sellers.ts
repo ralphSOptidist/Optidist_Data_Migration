@@ -4,31 +4,31 @@ import { generateUUID } from "../utils/generateUUID";
 export async function insertUsersAndStores() {
   const queryRunner = sourceDatabase.createQueryRunner();
   const queryRunner2 = targetDatabase.createQueryRunner();
-  try {
-    await queryRunner.connect();
-    await queryRunner2.connect();
+  await queryRunner.connect();
+  await queryRunner2.connect();
 
-    const businesses = await queryRunner.manager
-      .createQueryBuilder()
-      .select("*")
-      .from("business_information", "business_information")
-      .where("business_information.user_id IS NOT NULL")
-      .getRawMany();
+  const businesses = await queryRunner.manager
+    .createQueryBuilder()
+    .select("*")
+    .from("business_information", "business_information")
+    .where("business_information.user_id IS NOT NULL")
+    .getRawMany();
 
-    const stores = await queryRunner.manager
-      .createQueryBuilder()
-      .select("*")
-      .from("store", "store")
-      .getRawMany();
+  const stores = await queryRunner.manager
+    .createQueryBuilder()
+    .select("*")
+    .from("store", "store")
+    .getRawMany();
 
-    const users = await queryRunner.manager
-      .createQueryBuilder()
-      .select("*")
-      .from("user", "user")
-      .getRawMany();
+  const users = await queryRunner.manager
+    .createQueryBuilder()
+    .select("*")
+    .from("user", "user")
+    .getRawMany();
 
-    await Promise.all(
-      users?.map(async (u) => {
+  await Promise.all(
+    users?.map(async (u) => {
+      try {
         let store_id = u.store_id;
 
         let count = await queryRunner2.manager
@@ -60,54 +60,65 @@ export async function insertUsersAndStores() {
               payment_link_template: store.payment_link_template,
               invite_link_template: store.invite_link_template,
               default_location_id: store.default_location_id,
-              industries: business.industries,
+              industries: JSON.stringify(business.industries),
               tax_number: business.tax_number,
               bin: business.bin,
               country_code: country.iso_2,
               verified_at: new Date(),
               legal_name: null,
-              image: store.image,
+              image: store.image ? JSON.stringify({ name: store.image }) : null,
             };
+
+            await queryRunner2.manager
+              .createQueryBuilder()
+              .insert()
+              .into("store")
+              .values(reformatted_store)
+              .execute();
 
             console.log("store: ", store);
 
-            await targetDatabase.query(
-              `
-                INSERT INTO store (
-                  id, name, default_currency_code, swap_link_template, created_at, 
-                  updated_at, metadata, payment_link_template, invite_link_template, 
-                  default_location_id, industries, tax_number, bin, country_code, 
-                  verified_at, legal_name, image
-                ) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-              `,
-              [
-                reformatted_store.id,
-                reformatted_store.name,
-                reformatted_store.default_currency_code,
-                reformatted_store.swap_link_template,
-                reformatted_store.created_at,
-                reformatted_store.updated_at,
-                reformatted_store.metadata,
-                reformatted_store.payment_link_template,
-                reformatted_store.invite_link_template,
-                reformatted_store.default_location_id,
-                reformatted_store.industries,
-                reformatted_store.tax_number,
-                reformatted_store.bin,
-                reformatted_store.country_code,
-                reformatted_store.verified_at,
-                reformatted_store.legal_name,
-                reformatted_store.image,
-              ]
-            );
+            // await targetDatabase.query(
+            //   `
+            //     INSERT INTO store (
+            //       id, name, default_currency_code, swap_link_template, created_at,
+            //       updated_at, metadata, payment_link_template, invite_link_template,
+            //       default_location_id, industries, tax_number, bin, country_code,
+            //       verified_at, legal_name, image
+            //     )
+            //     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            //   `,
+            //   [
+            //     reformatted_store.id,
+            //     reformatted_store.name,
+            //     reformatted_store.default_currency_code,
+            //     reformatted_store.swap_link_template,
+            //     reformatted_store.created_at,
+            //     reformatted_store.updated_at,
+            //     reformatted_store.metadata,
+            //     reformatted_store.payment_link_template,
+            //     reformatted_store.invite_link_template,
+            //     reformatted_store.default_location_id,
+            //     reformatted_store.industries,
+            //     reformatted_store.tax_number,
+            //     reformatted_store.bin,
+            //     reformatted_store.country_code,
+            //     reformatted_store.verified_at,
+            //     reformatted_store.legal_name,
+            //     reformatted_store.image,
+            //   ]
+            // );
           }
         }
-      })
-    );
+      } catch (e) {
+        console.error("Error: ", e);
+      }
+    })
+  );
 
-    await Promise.all(
-      users?.map(async (u, index) => {
+  await Promise.all(
+    users?.map(async (u, index) => {
+      try {
         await queryRunner2.manager
           .createQueryBuilder()
           .insert()
@@ -134,12 +145,9 @@ export async function insertUsersAndStores() {
           })
           .execute();
         console.log(`Added user : ${index + 1}/${users.length}`);
-      })
-    );
-  } catch (e) {
-    console.error("Error: ", e);
-  } finally {
-    console.log("done");
-    await queryRunner.release();
-  }
+      } catch (e) {
+        console.error("Error: ", e);
+      }
+    })
+  );
 }
