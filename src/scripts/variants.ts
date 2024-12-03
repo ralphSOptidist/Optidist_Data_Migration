@@ -1,4 +1,5 @@
 import { sourceDatabase, targetDatabase } from "../data-source";
+import { writeErrorToFile } from "../utils/writeErrors";
 
 export async function insertProductVariants() {
   const queryRunner = sourceDatabase.createQueryRunner();
@@ -66,6 +67,7 @@ export async function insertProductVariants() {
             `Added variant : ${index + 1}/${product_variants.length}`
           );
         } catch (err) {
+          writeErrorToFile(va.id + "\n" + err);
           console.error("Error processing variant:", va.id, err);
           throw err;
         }

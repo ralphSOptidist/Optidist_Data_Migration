@@ -1,4 +1,5 @@
 import { sourceDatabase, targetDatabase } from "../data-source";
+import { writeErrorToFile } from "../utils/writeErrors";
 
 export async function insertProductImages() {
   const queryRunner = sourceDatabase.createQueryRunner();
@@ -33,6 +34,7 @@ export async function insertProductImages() {
 
           console.log(`Added Image : ${index + 1}/${images.length}`);
         } catch (err) {
+          writeErrorToFile(im.id + "\n" + err);
           console.error("Error processing image:", im.id, err);
           throw err;
         }
@@ -64,6 +66,7 @@ export async function insertProductImages() {
             `Added Product Image : ${index + 1}/${product_images.length}`
           );
         } catch (err) {
+          writeErrorToFile(im.id + "\n" + err);
           console.error("Error processing product image:", im.id, err);
           throw err;
         }

@@ -1,5 +1,6 @@
 import { sourceDatabase, targetDatabase } from "../data-source";
 import { isValidURL } from "../utils/isUrl";
+import { writeErrorToFile } from "../utils/writeErrors";
 
 export async function insertProducts() {
   const queryRunner = sourceDatabase.createQueryRunner();
@@ -70,6 +71,7 @@ export async function insertProducts() {
 
           console.log(`Added product : ${index + 1}/${products.length}`);
         } catch (err) {
+          writeErrorToFile(pr.id + "\n" + err);
           console.error("Error processing product:", pr.id, err);
           throw err;
         }

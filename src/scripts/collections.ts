@@ -1,5 +1,6 @@
 import { sourceDatabase, targetDatabase } from "../data-source";
 import { isValidURL } from "../utils/isUrl";
+import { writeErrorToFile } from "../utils/writeErrors";
 
 export async function insertCollections() {
   const queryRunner = sourceDatabase.createQueryRunner();
@@ -37,6 +38,7 @@ export async function insertCollections() {
 
           console.log(`Added collection : ${index + 1}/${collections.length}`);
         } catch (err) {
+          writeErrorToFile(collection.id + "\n" + err);
           console.error("Error processing collection:", collection.id, err);
           throw err;
         }

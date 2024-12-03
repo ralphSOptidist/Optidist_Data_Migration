@@ -1,6 +1,7 @@
 {
   "type": "module",
   "scripts": {
+    "prestart": "tsx src/scripts/resetErrorLogs.ts",
     "start": "tsx src/app.ts"
   },
   "dependencies": {

@@ -1,5 +1,6 @@
 import { sourceDatabase, targetDatabase } from "../data-source";
 import { generateUUID } from "../utils/generateUUID";
+import { writeErrorToFile } from "../utils/writeErrors";
 
 export async function insertProductVariantMoneyAmounts() {
   const queryRunner = sourceDatabase.createQueryRunner();
@@ -40,6 +41,7 @@ export async function insertProductVariantMoneyAmounts() {
             `Added money amount : ${index + 1}/${money_amounts.length}`
           );
         } catch (err) {
+          writeErrorToFile(ma.id + "\n" + err);
           console.error("Error processing money amount:", ma.id, err);
           throw err;
         }
@@ -73,6 +75,7 @@ export async function insertProductVariantMoneyAmounts() {
             }`
           );
         } catch (err) {
+          writeErrorToFile(ma.id + "\n" + err);
           console.error("Error processing variant X money amount:", ma.id, err);
           throw err;
         }

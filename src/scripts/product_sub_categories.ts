@@ -1,4 +1,5 @@
 import { sourceDatabase, targetDatabase } from "../data-source";
+import { writeErrorToFile } from "../utils/writeErrors";
 
 export async function insertSubCategoriesWithProducts() {
   const queryRunner = sourceDatabase.createQueryRunner();
@@ -46,6 +47,7 @@ export async function insertSubCategoriesWithProducts() {
             `Added product to sub category : ${index + 1}/${tags.length}`
           );
         } catch (err) {
+          writeErrorToFile(tag.id + "\n" + err);
           console.error(
             "Error processing product to sub category:",
             tag.id,

@@ -1,4 +1,5 @@
 import { sourceDatabase, targetDatabase } from "../data-source";
+import { writeErrorToFile } from "../utils/writeErrors";
 
 export async function insertUsersAndStores() {
   const queryRunner = sourceDatabase.createQueryRunner();
@@ -107,6 +108,7 @@ export async function insertUsersAndStores() {
               .execute();
           }
         } catch (err) {
+          writeErrorToFile(store.id + "\n" + err);
           console.error("Error processing store:", store.id, err);
           throw err;
         }
@@ -143,6 +145,7 @@ export async function insertUsersAndStores() {
             .execute();
           console.log(`Added user : ${index + 1}/${users.length}`);
         } catch (err) {
+          writeErrorToFile(u.id + "\n" + err);
           console.error("Error inserting user:", u.id, err);
           throw err; // This will stop the Promise.all execution
         }
