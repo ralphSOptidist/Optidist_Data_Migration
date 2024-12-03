@@ -57,15 +57,16 @@ export async function insertProducts() {
 
           //add product to main category
 
-          await queryRunner2.manager
-            .createQueryBuilder()
-            .insert()
-            .into("public.product_category_product")
-            .values({
-              product_category_id: pr.type_id,
-              product_id: pr.id,
-            })
-            .execute();
+          if (pr.type_id)
+            await queryRunner2.manager
+              .createQueryBuilder()
+              .insert()
+              .into("public.product_category_product")
+              .values({
+                product_category_id: pr.type_id,
+                product_id: pr.id,
+              })
+              .execute();
 
           console.log(`Added product : ${index + 1}/${products.length}`);
         } catch (err) {

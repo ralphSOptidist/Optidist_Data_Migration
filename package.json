@@ -1,17 +1,18 @@
 {
-  "type": "commonjs",
+  "type": "module",
   "scripts": {
-    "start": "npx ts-node src/app.ts"
+    "start": "tsx src/app.ts"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
     "nanoid": "^5.0.9",
     "pg": "^8.13.1",
+    "tsx": "^4.19.2",
     "typeorm": "^0.3.20"
   },
   "devDependencies": {
+    "@types/nanoid": "^2.1.0",
     "@types/node": "^22.10.1",
-    "ts-node": "^10.9.2",
     "typescript": "^5.7.2"
   }
 }
