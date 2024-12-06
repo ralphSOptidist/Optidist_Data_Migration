@@ -70,8 +70,8 @@ export async function insertUsersAndStores() {
               industries: business?.industries
                 ? JSON.stringify(business.industries)
                 : [],
-              tax_number: business?.tax_number,
-              bin: business?.bin,
+              tax_number: business?.tax_number || "",
+              bin: business?.bin || "",
               country_code: country.iso_2,
               verified_at: new Date(),
               legal_name: null,
