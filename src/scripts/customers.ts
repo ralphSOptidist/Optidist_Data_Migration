@@ -14,27 +14,36 @@ export async function insertCustomersAndBusinesses() {
       .from("address", "address")
       .getRawMany();
 
+    let customers = await queryRunner.manager
+      .createQueryBuilder()
+      .select("*")
+      .from("customer", "cs")
+      .getRawMany();
+
+    let business_ids: string[] = [];
+
+    customers.map((customer) => {
+      if (customer?.business_information_id?.length > 0) {
+        business_ids.push(customer.business_information_id);
+      }
+    });
     const businesses = await queryRunner.manager
       .createQueryBuilder()
       .select("*")
-      .from("business_information", "bs") // Table name as string and alias
-      .where("bs.customer_id IS NOT NULL")
+      .from("business_information", "business_information") // Table name as string and alias
+      .where("business_information.id IN (:...ids)", {
+        ids: business_ids,
+      })
       .getRawMany();
 
-    const distinctBusinesses: any = businesses.reduce((acc, current) => {
-      if (!acc.find((item: any) => item.customer_id === current.customer_id)) {
-        acc.push(current);
-      }
-      return acc;
-    }, []);
     await Promise.all(
-      distinctBusinesses?.map(async (bs: any, index: number) => {
+      businesses?.map(async (bs: any, index: number) => {
         try {
           let customer = await queryRunner.manager
             .createQueryBuilder()
             .select("*")
             .from("customer", "cs")
-            .where("cs.id = :id", { id: bs.customer_id })
+            .where("cs.business_information_id = :id", { id: bs.id })
             .getRawOne();
 
           let country = await queryRunner.manager
@@ -55,7 +64,7 @@ export async function insertCustomersAndBusinesses() {
             customer.first_name,
             customer.last_name,
             customer.password_hash,
-            customer.phone,
+            customer?.phone || "",
             false,
             new Date(),
             new Date(),
@@ -80,7 +89,7 @@ export async function insertCustomersAndBusinesses() {
             customer.first_name,
             customer.last_name,
             customer.password_hash,
-            customer.phone,
+            customer?.phone || "",
             new Date(),
             new Date(),
             "en",
@@ -93,9 +102,7 @@ export async function insertCustomersAndBusinesses() {
           ]);
 
           console.log(
-            `Added customer business : ${index + 1}/${
-              distinctBusinesses.length
-            }`
+            `Added customer business : ${index + 1}/${businesses.length}`
           );
 
           let filtered_addresses = addresses.filter(

@@ -58,7 +58,7 @@ export async function insertProducts() {
 
           //add product to main category
 
-          if (pr.type_id)
+          if (pr?.type_id?.length > 0)
             await queryRunner2.manager
               .createQueryBuilder()
               .insert()

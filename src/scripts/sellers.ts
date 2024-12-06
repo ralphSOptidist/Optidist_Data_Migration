@@ -7,23 +7,32 @@ export async function insertUsersAndStores() {
   await queryRunner.connect();
   await queryRunner2.connect();
 
-  const businesses = await queryRunner.manager
+  const users = await queryRunner.manager
     .createQueryBuilder()
     .select("*")
-    .from("business_information", "business_information")
-    .where("business_information.user_id IS NOT NULL")
+    .from("user", "user")
     .getRawMany();
 
+  let business_ids: string[] = [];
   const stores = await queryRunner.manager
     .createQueryBuilder()
     .select("*")
     .from("store", "store")
     .getRawMany();
 
-  const users = await queryRunner.manager
+  stores?.map((store) => {
+    if (store?.business_information_id?.length > 0) {
+      business_ids.push(store.business_information_id);
+    }
+  });
+
+  const businesses = await queryRunner.manager
     .createQueryBuilder()
     .select("*")
-    .from("user", "user")
+    .from("business_information", "business_information")
+    .where("business_information.id IN(:...ids)", {
+      ids: business_ids,
+    })
     .getRawMany();
 
   try {
@@ -36,7 +45,7 @@ export async function insertUsersAndStores() {
 
           if (user?.length > 0) {
             let business = businesses.find(
-              (bus) => bus.user_id === user[0]?.id
+              (bus) => bus.id === user[0]?.business_information_id
             );
             let country = await queryRunner.manager
               .createQueryBuilder()

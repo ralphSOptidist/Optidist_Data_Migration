@@ -21,7 +21,6 @@ export async function insertCollections() {
           let reformatted_collection = {
             id: collection.id,
             title: collection.title,
-            handle: collection.handle,
             created_at: collection.created_at,
             updated_at: collection.updated_at,
             deleted_at: collection.deleted_at,
