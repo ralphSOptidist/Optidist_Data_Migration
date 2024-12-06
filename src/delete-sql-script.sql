@@ -1,3 +1,7 @@
+delete from public.address_customer_user;
+delete from public.address;
+delete from public.customer_user;
+delete from public.customer;
 delete from public.user;
 delete from public.image;
 delete from public.product_images;

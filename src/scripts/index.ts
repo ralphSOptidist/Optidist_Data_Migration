@@ -8,8 +8,8 @@ import { insertUsersAndStores } from "./sellers";
 import { insertProductVariants } from "./variants";
 
 export async function runScripts() {
+  await insertCustomersAndBusinesses();
   await insertUsersAndStores();
-  // await insertCustomersAndBusinesses();
   await insertCollections();
   await insertProducts();
   await insertSubCategoriesWithProducts();
