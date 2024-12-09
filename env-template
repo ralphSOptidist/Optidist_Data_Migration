@@ -11,3 +11,17 @@ FROM_DB_USERNAME = "user"
 FROM_DB_PASSWORD = "password"
 FROM_DB_NAME = "database"
 TO_DB_SSL = 0
+
+FROM_SPACES_URL="url"
+FROM_SPACES_BUCKET="bucket name"
+FROM_SPACES_ENDPOINT="bucket endpoint"
+FROM_SPACES_ACCESS_KEY_ID="bucket id"
+FROM_SPACES_SECRET_ACCESS_KEY="secret key"
+FROM_SPACES_REGION="region"
+
+TO_SPACES_URL="url"
+TO_SPACES_BUCKET="bucket name"
+TO_SPACES_ENDPOINT="bucket endpoint"
+TO_SPACES_ACCESS_KEY_ID="bucket id"
+TO_SPACES_SECRET_ACCESS_KEY="secret key"
+TO_SPACES_REGION="region"

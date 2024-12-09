@@ -1,6 +1,10 @@
 import { sourceDatabase, targetDatabase } from "../data-source";
+import { transferImage } from "../utils/digitalOcean";
 import { isValidURL } from "../utils/isUrl";
 import { writeErrorToFile } from "../utils/writeErrors";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export async function insertProducts() {
   const queryRunner = sourceDatabase.createQueryRunner();
@@ -25,7 +29,10 @@ export async function insertProducts() {
             description: pr.description,
             handle: pr.handle,
             is_giftcard: pr.is_giftcard,
-            thumbnail: isValidURL(pr.thumbnail) ? pr.thumbnail : null,
+            thumbnail:
+              pr?.thumbnail?.length > 0
+                ? process.env.FROM_SPACES_URL + "/" + pr.thumbnail
+                : null,
             weight: pr.weight,
             length: pr.length,
             height: pr.height,
@@ -48,6 +55,13 @@ export async function insertProducts() {
             //   '{"nutritional_statistics":null,"ingredients":null}',
             store_id: pr.store_id,
           };
+
+          if (pr.thumbnail) {
+            console.log(`Processing thumbnail for product ID ${pr.id}...`);
+            await transferImage(
+              process.env.FROM_SPACES_URL + "/" + pr.thumbnail
+            );
+          }
 
           await queryRunner2.manager
             .createQueryBuilder()
