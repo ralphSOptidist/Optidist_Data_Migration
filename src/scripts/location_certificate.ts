@@ -13,10 +13,10 @@ export async function insertLocationCertificates() {
   const location_certificates = await queryRunner.manager
     .createQueryBuilder()
     .select("*")
-    .from("location_certificates", "location_certificates")
+    .from("location_certificate", "location_certificate")
     //delete this line
-    .where("location_certificates.id = :id", {
-      id: "adcert_01H93TRGWG3QW4N1TGMPH9R7VP",
+    .where("location_certificate.id = :id", {
+      id: "adcert_01H93TRGWG3QW4N1TGMPH9R7VPp",
     })
     .getRawMany();
 
