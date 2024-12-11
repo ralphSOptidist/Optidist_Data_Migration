@@ -1,4 +1,5 @@
 import { sourceDatabase, targetDatabase } from "../data-source";
+import { transferImage } from "../utils/digitalOcean";
 import { isValidURL } from "../utils/isUrl";
 import { writeErrorToFile } from "../utils/writeErrors";
 
@@ -24,9 +25,24 @@ export async function insertCollections() {
             created_at: collection.created_at,
             updated_at: collection.updated_at,
             deleted_at: collection.deleted_at,
-            image_url: isValidURL(collection.image) ? collection.image : null,
+            image_url:
+              collection?.image?.length > 0
+                ? process.env.TO_SPACES_URL +
+                  "/" +
+                  collection.image.replaceAll("brands/", "")
+                : null,
             store_id: collection.store_id,
           };
+
+          if (collection?.image.length > 0) {
+            console.log(
+              `Processing thumbnail for collection ID ${collection.id}...`
+            );
+            await transferImage(
+              collection.image,
+              collection.image.replaceAll("brands/", "")
+            );
+          }
 
           await queryRunner2.manager
             .createQueryBuilder()

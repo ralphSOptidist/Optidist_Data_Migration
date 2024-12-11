@@ -1,4 +1,5 @@
 import { sourceDatabase, targetDatabase } from "../data-source";
+import { transferImage } from "../utils/digitalOcean";
 import { writeErrorToFile } from "../utils/writeErrors";
 
 export async function insertProductImages() {
@@ -19,11 +20,17 @@ export async function insertProductImages() {
         try {
           let reformatted_image = {
             id: im.id,
-            url: im.url,
+            url:
+              process.env.TO_SPACES_URL +
+              "/" +
+              im.url.replaceAll("products/", ""),
             created_at: im.created_at,
             updated_at: im.updated_at,
             deleted_at: im.deleted_at,
           };
+
+          console.log(`Processing image ID ${im.id}...`);
+          await transferImage(im.url, im.url.replaceAll("products/", ""));
 
           await queryRunner2.manager
             .createQueryBuilder()

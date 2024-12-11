@@ -19,11 +19,13 @@ const targetS3 = new AWS.S3({
   region: process.env.TO_SPACES_REGION,
 });
 
-export const transferImage = async (key: string) => {
+export const transferImage = async (key: string, newKey: string) => {
   try {
+    console.log(`Attempting to download object with key: ${key}`);
+
     const objectData = await sourceS3
       .getObject({
-        Bucket: "optidist-dev",
+        Bucket: "optidist",
         Key: key,
       })
       .promise();
@@ -33,20 +35,21 @@ export const transferImage = async (key: string) => {
     await targetS3
       .upload({
         Bucket: "optidist-staging",
-        Key: key,
+        Key: newKey,
         Body: objectData.Body as Readable,
         ContentType: objectData.ContentType,
+        ACL: "public-read-write",
       })
       .promise();
 
-    console.log(`Uploaded object to new bucket: ${key}`);
-  } catch (error) {
-    console.error(`Failed to transfer ${key}:`, error);
-  }
-};
+    console.log(`Uploaded object to new bucket: ${newKey}`);
+  } catch (error: any) {
+    console.error(
+      `Failed to transfer object. Bucket: "optidist", Key: ${key}, Error: ${error.message}`
+    );
 
-const transferImages = async (keys: string[]) => {
-  for (const key of keys) {
-    await transferImage(key);
+    if (error.code === "NoSuchKey") {
+      console.error(`Key "${key}" does not exist in the source bucket.`);
+    }
   }
 };

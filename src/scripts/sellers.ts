@@ -1,4 +1,5 @@
 import { sourceDatabase, targetDatabase } from "../data-source";
+import { transferImage } from "../utils/digitalOcean";
 import { writeErrorToFile } from "../utils/writeErrors";
 
 export async function insertUsersAndStores() {
@@ -10,7 +11,9 @@ export async function insertUsersAndStores() {
   const users = await queryRunner.manager
     .createQueryBuilder()
     .select("*")
-    .from("user", "user")
+    .from("user", "u")
+    //delete this line afterwards
+    .where("u.id = :id", { id: "usr_01JERE27T90AFKRVAK7WVJSCF3" })
     .getRawMany();
 
   let business_ids: string[] = [];
@@ -18,6 +21,8 @@ export async function insertUsersAndStores() {
     .createQueryBuilder()
     .select("*")
     .from("store", "store")
+    //delete this line afterwards
+    .where("store.id = :id", { id: "store_01JERE27WAK0TK3AJ678A2X6X1" })
     .getRawMany();
 
   stores?.map((store) => {
@@ -106,8 +111,21 @@ export async function insertUsersAndStores() {
               country_code: country.iso_2,
               verified_at: new Date(),
               legal_name: null,
-              image: store.image ? JSON.stringify({ name: store.image }) : null,
+              image:
+                store?.image?.length > 0
+                  ? process.env.TO_SPACES_URL +
+                    "/" +
+                    store.image.replaceAll("business/", "")
+                  : null,
             };
+
+            if (store?.image?.length > 0) {
+              console.log(`Processing thumbnail for store ID ${store.id}...`);
+              await transferImage(
+                store.image,
+                store.image.replaceAll("business/", "")
+              );
+            }
 
             await queryRunner2.manager
               .createQueryBuilder()

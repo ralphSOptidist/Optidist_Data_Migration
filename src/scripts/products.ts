@@ -16,11 +16,14 @@ export async function insertProducts() {
     .createQueryBuilder()
     .select("*")
     .from("product", "product")
+    //remove this later
+    .where("product.id = :id", { id: "prod_00_1908" })
     .getRawMany();
 
   try {
     await Promise.all(
       products?.map(async (pr, index) => {
+        console.log("thumbnail: ", pr.thumbnail);
         try {
           let reformatted_product = {
             id: pr.id,
@@ -31,7 +34,9 @@ export async function insertProducts() {
             is_giftcard: pr.is_giftcard,
             thumbnail:
               pr?.thumbnail?.length > 0
-                ? process.env.FROM_SPACES_URL + "/" + pr.thumbnail
+                ? process.env.TO_SPACES_URL +
+                  "/" +
+                  pr.thumbnail.replaceAll("products/", "")
                 : null,
             weight: pr.weight,
             length: pr.length,
@@ -56,32 +61,33 @@ export async function insertProducts() {
             store_id: pr.store_id,
           };
 
-          if (pr.thumbnail) {
+          if (pr?.thumbnail?.length > 0) {
             console.log(`Processing thumbnail for product ID ${pr.id}...`);
             await transferImage(
-              process.env.FROM_SPACES_URL + "/" + pr.thumbnail
+              pr.thumbnail,
+              pr.thumbnail.replaceAll("products/", "")
             );
           }
 
-          await queryRunner2.manager
-            .createQueryBuilder()
-            .insert()
-            .into("public.product")
-            .values(reformatted_product)
-            .execute();
+          // await queryRunner2.manager
+          //   .createQueryBuilder()
+          //   .insert()
+          //   .into("public.product")
+          //   .values(reformatted_product)
+          //   .execute();
 
-          //add product to main category
+          // //add product to main category
 
-          if (pr?.type_id?.length > 0)
-            await queryRunner2.manager
-              .createQueryBuilder()
-              .insert()
-              .into("public.product_category_product")
-              .values({
-                product_category_id: pr.type_id,
-                product_id: pr.id,
-              })
-              .execute();
+          // if (pr?.type_id?.length > 0)
+          //   await queryRunner2.manager
+          //     .createQueryBuilder()
+          //     .insert()
+          //     .into("public.product_category_product")
+          //     .values({
+          //       product_category_id: pr.type_id,
+          //       product_id: pr.id,
+          //     })
+          //     .execute();
 
           console.log(`Added product : ${index + 1}/${products.length}`);
         } catch (err) {
