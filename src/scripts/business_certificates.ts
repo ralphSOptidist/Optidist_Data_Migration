@@ -27,8 +27,8 @@ export async function insertBusinessCertificates() {
           let store = await queryRunner.manager
             .createQueryBuilder()
             .select("*")
-            .from("store", "store")
-            .where("store.business_information_id = :business_information_id", {
+            .from("store", "s")
+            .where("s.business_information_id = :business_information_id", {
               business_information_id: bc.business_id,
             })
             .getOne();
@@ -36,12 +36,11 @@ export async function insertBusinessCertificates() {
           let customer = await queryRunner.manager
             .createQueryBuilder()
             .select("*")
-            .from("customer", "customer")
-            .where(
-              "customer.business_information_id = :business_information_id",
-              { business_information_id: bc.business_id }
-            )
-            .andWhere("customer.role = :role", { role: "admin" })
+            .from("customer", "cs")
+            .where("cs.business_information_id = :business_information_id", {
+              business_information_id: bc.business_id,
+            })
+            .andWhere("cs.role = :role", { role: "admin" })
             .getOne();
 
           let entity_id: string = "";
