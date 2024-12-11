@@ -31,7 +31,7 @@ export async function insertBusinessCertificates() {
             .where("s.business_information_id = :business_information_id", {
               business_information_id: bc.business_id,
             })
-            .getOne();
+            .getRawOne();
 
           let customer = await queryRunner.manager
             .createQueryBuilder()
@@ -41,7 +41,7 @@ export async function insertBusinessCertificates() {
               business_information_id: bc.business_id,
             })
             .andWhere("cs.role = :role", { role: "admin" })
-            .getOne();
+            .getRawOne();
 
           let entity_id: string = "";
           let entity_type: string = "";
@@ -68,7 +68,7 @@ export async function insertBusinessCertificates() {
           console.log(
             `Processing thumbnail for business certificate ${bc.id}...`
           );
-          await transferImage(bc.url, bc.url.replaceAll("business/", ""));
+          await transferImage(bc.name, bc.name.replaceAll("business/", ""));
 
           await queryRunner2.manager
             .createQueryBuilder()

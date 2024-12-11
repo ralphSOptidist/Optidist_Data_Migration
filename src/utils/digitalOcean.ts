@@ -38,7 +38,7 @@ export const transferImage = async (key: string, newKey: string) => {
         Key: newKey,
         Body: objectData.Body as Readable,
         ContentType: objectData.ContentType,
-        ACL: "public-read-write",
+        ACL: "public-read",
       })
       .promise();
 

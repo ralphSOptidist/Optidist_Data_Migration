@@ -16,10 +16,11 @@ export async function insertLocationCertificates() {
     .from("location_certificate", "location_certificate")
     //delete this line
     .where("location_certificate.id = :id", {
-      id: "adcert_01H93TRGWG3QW4N1TGMPH9R7VPp",
+      id: "adcert_01H93TRGWG3QW4N1TGMPH9R7VP",
     })
     .getRawMany();
 
+  console.log("location_certificates: ", location_certificates);
   try {
     await Promise.all(
       location_certificates?.map(async (lc, index) => {
@@ -35,7 +36,7 @@ export async function insertLocationCertificates() {
           console.log(
             `Processing thumbnail for location certificate ${lc.id}...`
           );
-          await transferImage(lc.url, lc.url);
+          await transferImage(lc.name, lc.name);
 
           await queryRunner2.manager
             .createQueryBuilder()

@@ -1,7 +1,7 @@
 import { insertBusinessCertificates } from "./business_certificates";
 import { insertCollections } from "./collections";
 import { insertCustomersAndBusinesses } from "./customers";
-import { insertLocationCertificates } from "./location_certificate";
+import { insertLocationCertificates } from "./location_certificates";
 import { insertProductVariantMoneyAmounts } from "./money_amount";
 import { insertProductImages } from "./product_images";
 import { insertSubCategoriesWithProducts } from "./product_sub_categories";
