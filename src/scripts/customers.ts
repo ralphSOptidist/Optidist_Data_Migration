@@ -18,10 +18,6 @@ export async function insertCustomersAndBusinesses() {
       .createQueryBuilder()
       .select("*")
       .from("customer", "cs")
-      //delete this line afterwards
-      .where("cs.id = :id", {
-        id: "cus_00_10",
-      })
       .getRawMany();
 
     console.log(customers);

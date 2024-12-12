@@ -12,3 +12,12 @@ delete from public.product_variant;
 delete from public.store;
 delete from public.product_collection;
 delete from public.product;
+delete from public.document;
+delete from public.region;
+delete from public.stock_location;
+delete from public.inventory_item;
+delete from public.inventory_level;
+delete from public.product_variant_inventory_item;
+delete from public.product_variant_location;
+
+

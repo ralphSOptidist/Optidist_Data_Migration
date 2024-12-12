@@ -14,10 +14,6 @@ export async function insertBusinessCertificates() {
     .createQueryBuilder()
     .select("*")
     .from("business_certificate", "business_certificate")
-    //delete this line
-    .where("business_certificate.id = :id", {
-      id: "buscert_01H5AD5XKBNVJY7THPM6B40C23",
-    })
     .getRawMany();
 
   try {

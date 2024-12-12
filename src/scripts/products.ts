@@ -16,8 +16,6 @@ export async function insertProducts() {
     .createQueryBuilder()
     .select("*")
     .from("product", "product")
-    //remove this later
-    .where("product.id = :id", { id: "prod_00_1908" })
     .getRawMany();
 
   try {
@@ -69,25 +67,25 @@ export async function insertProducts() {
             );
           }
 
-          // await queryRunner2.manager
-          //   .createQueryBuilder()
-          //   .insert()
-          //   .into("public.product")
-          //   .values(reformatted_product)
-          //   .execute();
+          await queryRunner2.manager
+            .createQueryBuilder()
+            .insert()
+            .into("public.product")
+            .values(reformatted_product)
+            .execute();
 
-          // //add product to main category
+          //add product to main category
 
-          // if (pr?.type_id?.length > 0)
-          //   await queryRunner2.manager
-          //     .createQueryBuilder()
-          //     .insert()
-          //     .into("public.product_category_product")
-          //     .values({
-          //       product_category_id: pr.type_id,
-          //       product_id: pr.id,
-          //     })
-          //     .execute();
+          if (pr?.type_id?.length > 0)
+            await queryRunner2.manager
+              .createQueryBuilder()
+              .insert()
+              .into("public.product_category_product")
+              .values({
+                product_category_id: pr.type_id,
+                product_id: pr.id,
+              })
+              .execute();
 
           console.log(`Added product : ${index + 1}/${products.length}`);
         } catch (err) {

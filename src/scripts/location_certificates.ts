@@ -14,13 +14,8 @@ export async function insertLocationCertificates() {
     .createQueryBuilder()
     .select("*")
     .from("location_certificate", "location_certificate")
-    //delete this line
-    .where("location_certificate.id = :id", {
-      id: "adcert_01H93TRGWG3QW4N1TGMPH9R7VP",
-    })
     .getRawMany();
 
-  console.log("location_certificates: ", location_certificates);
   try {
     await Promise.all(
       location_certificates?.map(async (lc, index) => {
